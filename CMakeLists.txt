@@ -37,9 +37,6 @@ add_executable(stream_aic stream_aic.c aime.c bana.c mode.c nfc.c pn532.c pn5180
 pico_set_program_name(stream_aic "stream_aic")
 pico_set_program_version(stream_aic "0.1")
 
-# Generate PIO header
-pico_generate_pio_header(stream_aic ${CMAKE_CURRENT_LIST_DIR}/blink.pio)
-
 # Modify the below lines to enable/disable output over UART/USB
 pico_enable_stdio_uart(stream_aic 0)
 pico_enable_stdio_usb(stream_aic 1)
