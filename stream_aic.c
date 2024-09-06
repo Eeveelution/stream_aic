@@ -83,7 +83,7 @@ void wait_loop() {
 
 void card_name_update_cb(nfc_card_name card_name)
 {
-    printf("CardSignal\n");
+    printf("\nCardSignal");
 }
 
 static void cdc_reader_putc(uint8_t byte)
@@ -189,7 +189,6 @@ static void update_cardio(nfc_card_t *card)
     for (int i = 1; i < 9; i++) {
         printf("%02X", hid_cardio.current[i]);
     }
-    printf("\n");
 }
 
 static void cardio_run()

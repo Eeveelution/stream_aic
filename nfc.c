@@ -401,7 +401,7 @@ void nfc_identify_last_card()
 void display_card(const nfc_card_t *card)
 {
     if (card->card_type != NFC_CARD_NONE) {
-        printf("CardData|");
+        printf("\nCardData|");
         printf("%s|", nfc_card_type_str(card->card_type));
         printf("%s|", nfc_card_name_str(card->card_type));
         for (int i = 0; i < card->len; i++) {
