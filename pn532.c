@@ -4,6 +4,9 @@
  *
  */
 
+//#define ONLY_DEBUG(...) printf(__VA_ARGS__)
+
+#define ONLY_DEBUG(...) 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -71,9 +74,11 @@ static bool pn532_wait_ready()
     uint8_t status = 0;
 
     for (int retry = 0; retry < 30; retry++) {
+        ONLY_DEBUG("ready retry\n");
         if (pn532_read(&status, 1) == 1 && status == 0x01) {
             return true;
         }
+        ONLY_DEBUG("after ready retry\n");
         if (wait_loop) {
             wait_loop();
         }
@@ -213,11 +218,15 @@ int pn532_peak_response_len()
 
 int pn532_read_response(uint8_t cmd, uint8_t *resp, uint8_t len)
 {
+    ONLY_DEBUG("try read response");
     int real_len = pn532_peak_response_len();
+
+    ONLY_DEBUG("real_len: %d", real_len);
     if (real_len < 0) {
         return -1;
     }
 
+    ONLY_DEBUG("waiting ready.");
     if (!pn532_wait_ready()) {
         return -1;
     }
@@ -227,7 +236,9 @@ int pn532_read_response(uint8_t cmd, uint8_t *resp, uint8_t len)
     }
 
     uint8_t data[real_len];
+    ONLY_DEBUG("reading data");
     int ret = pn532_read_data(data, real_len);
+    ONLY_DEBUG("ret: %d", ret);
     if (ret != real_len ||
         data[0] != PN532_PN532TOHOST ||
         data[1] != cmd + 1) {
@@ -275,6 +286,7 @@ bool pn532_config_sam()
 static bool pn532_set_rf_field(bool auto_rf, bool on_off)
 {
     uint8_t param[] = { 1, (auto_rf ? 2 : 0) | (on_off ? 1 : 0) };
+    ONLY_DEBUG("write command\n");
     pn532_write_command(0x32, param, 2);
 
     uint8_t resp;
@@ -284,6 +296,7 @@ static bool pn532_set_rf_field(bool auto_rf, bool on_off)
 void pn532_rf_field(bool on)
 {
     pn532_set_rf_field(true, on);
+    ONLY_DEBUG("pn532 is on");
     if (on) {
         pn532_config_sam();
     }

@@ -1,5 +1,7 @@
 #define DEBUG(...) printf(__VA_ARGS__)
 
+#define ONLY_DEBUG(...) 
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
@@ -61,6 +63,8 @@ static aic_cfg_t aic_cfg = {
 
 void reader_poll_data()
 {
+    return;
+    
     if (tud_cdc_n_available(reader_intf)) {
         int count = tud_cdc_n_read(reader_intf, reader.buf + reader.pos,
                                    sizeof(reader.buf) - reader.pos);
@@ -185,29 +189,36 @@ static void update_cardio(nfc_card_t *card)
             return;
     }
 
-    printf("CardIO ");
+    ONLY_DEBUG("CardIO ");
     for (int i = 1; i < 9; i++) {
-        printf("%02X", hid_cardio.current[i]);
+        ONLY_DEBUG("%02X", hid_cardio.current[i]);
     }
 }
 
 static void cardio_run()
 {
+    ONLY_DEBUG("cardio\n");
     if (aime_is_active() || bana_is_active()) {
         memset(hid_cardio.current, 0, 9);
+        ONLY_DEBUG("return 1\n");
         return;
     }
 
     static nfc_card_t old_card = { 0 };
 
+    ONLY_DEBUG("rf on\n");
     nfc_rf_field(true);
+    ONLY_DEBUG("detect\n");
     nfc_card_t card = nfc_detect_card();
+    ONLY_DEBUG("after detect\n");
     if (card.card_type != NFC_CARD_NONE) {
         nfc_identify_last_card();
     }
+    ONLY_DEBUG("field off\n");
     nfc_rf_field(false);
 
     if (memcmp(&old_card, &card, sizeof(old_card)) == 0) {
+        ONLY_DEBUG("return 2\n");
         return;
     }
 
@@ -221,27 +232,47 @@ int main()
 {
     stdio_init_all();
 
+    ONLY_DEBUG("1\n");
+
     tusb_init();
+
+    ONLY_DEBUG("2\n");
+
+    gpio_init(PICO_DEFAULT_LED_PIN);
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
+    gpio_put(PICO_DEFAULT_LED_PIN, 1);
+
+    ONLY_DEBUG("3\n");
 
     uint32_t freq = clock_get_hz(clk_sys);
     clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS, freq, freq);
+
+    ONLY_DEBUG("4\n");
+
+    sleep_ms(2500);
 
     nfc_init_i2c(I2C_PORT, I2C_SCL, I2C_SDA, I2C_FREQ);
     nfc_init_spi(SPI_PORT, SPI_MISO, SPI_SCK, SPI_MOSI, SPI_RST, SPI_NSS, SPI_BUSY);
     nfc_init();
     nfc_set_wait_loop(wait_loop);
+
+    ONLY_DEBUG("5\n");
     nfc_set_card_name_listener(card_name_update_cb);
 
     aime_init(cdc_reader_putc);
     aime_virtual_aic(true);
     bana_init(cdc_reader_putc);
 
+    ONLY_DEBUG("6\n");
+
     while(1) {
         tud_task();
 
-        reader_run();
+        // reader_run();
         cardio_run();
 
         sleep_ms(1);
+
+        
     }
 }
