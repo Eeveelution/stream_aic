@@ -39,6 +39,9 @@
     "raspberry-pi-pico.python3Path": "${HOME}/.pico-sdk/python/3.12.1/python.exe",
     "files.associations": {
         "board_defs.h": "c",
-        "multicore.h": "c"
+        "multicore.h": "c",
+        "i2c.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c"
     }
 }
